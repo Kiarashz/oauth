@@ -1,0 +1,20 @@
+version: "3.3"
+services:
+  websvr:
+    image: jdk7
+    build:
+      context: ./jdk7
+      dockerfile: Dockerfile
+      args:
+        buildno: 1
+    hostname: websvr
+    domainname: test.me
+    command: sleep infinity
+    volumes:
+    - $HOME/.m2/repository:/root/.m2/repository
+    - ./settings.xml:/root/.m2/settings.xml
+    - ./source:/source
+    ports:
+    - 8090:8090
+
+
