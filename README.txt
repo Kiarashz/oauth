@@ -1,1 +1,2 @@
-Add source code in here to be mounted into docker container.
+Java/Maven project to try and learn how OAuth works.
+
