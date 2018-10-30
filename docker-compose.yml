@@ -13,7 +13,7 @@ services:
     volumes:
     - $HOME/.m2/repository:/root/.m2/repository
     - ./settings.xml:/root/.m2/settings.xml
-    - ./source:/source
+    - ./dbx-code-grant:/source/dbx-code-grant
     ports:
     - 8090:8090
 
