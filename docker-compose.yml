@@ -1,13 +1,13 @@
 version: "3.3"
 services:
-  websvr:
+  java7:
     image: jdk7
     build:
       context: ./jdk7
       dockerfile: Dockerfile
       args:
         buildno: 1
-    hostname: websvr
+    hostname: java7
     domainname: test.me
     command: sleep infinity
     volumes:
@@ -17,4 +17,11 @@ services:
     ports:
     - 8090:8090
 
-
+  redis:
+    image: redis
+    hostname: redis
+    domainname: test.me
+    volumes:
+    - ./redis-data:/data
+    ports:
+    - 6379:6379
