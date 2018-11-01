@@ -7,6 +7,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,13 +18,14 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URLEncoder;
 import com.lambdaworks.redis.*;
+import tutorial.auth.dropbox.account.PersonalAccount;
 
 @Controller
 public class MainController {
 
     String authEndpoint = "https://www.dropbox.com/oauth2/authorize";
     String tokenEndpoint = "https://api.dropboxapi.com/oauth2/token";
-    String accountInfoEndpoint = "https://api.dropboxapi.com/2/users/get_account";
+    String accountInfoEndpoint = "https://api.dropboxapi.com/2/users/get_current_account";
 
     String clientId;
     String clientSecret;
@@ -77,11 +79,15 @@ public class MainController {
 
         HttpPost getAccessTokenRequest = new HttpPost(tokenRequest);
         getAccessTokenRequest.addHeader("Accept", "application/json");
+        getAccessTokenRequest.setHeader("Content-Type", "application/x-www-form-urlencoded");
+        getAccessTokenRequest.setHeader("charset", "utf-8");
 
         DefaultHttpClient httpClient = new DefaultHttpClient();
         HttpResponse response = httpClient.execute(getAccessTokenRequest);
 
         if (response.getStatusLine().getStatusCode() != 200) {
+            model.addAttribute("fullResponse",
+                    String.format(" 1 %s", response.toString()));
             return handleError(response, model);
         }
 
@@ -98,14 +104,16 @@ public class MainController {
         response = httpClient.execute(getAccountInfoRequest);
 
         if (response.getStatusLine().getStatusCode() != 200) {
+            model.addAttribute("fullResponse",
+                    String.format(" 3 %s", response.toString()));
             return handleError(response, model);
         }
         streamReader =
                 new InputStreamReader(response.getEntity().getContent());
-        AccountInfoResponse aiResponse =
-                gson.fromJson(streamReader, AccountInfoResponse.class);
+        PersonalAccount account =
+                gson.fromJson(streamReader, PersonalAccount.class);
 
-        model.addAttribute("userName", aiResponse.getDisplayName());
+        model.addAttribute("userName", account.getName().getDisplayName());
 
         return "main";
     }
@@ -114,7 +122,7 @@ public class MainController {
 
         model.addAttribute("errorMessage",
                 "Error. HTTP status code: " + response.getStatusLine().getStatusCode()
-                + "\nReason: " + response.getStatusLine().getReasonPhrase());
+                + "\nReason: " + response.getStatusLine().getReasonPhrase() + model.get("fullResponse"));
 
         return "error";
     }
@@ -127,7 +135,10 @@ public class MainController {
     }
 
     private boolean isSettingsMissing() {
-        return clientId.trim().isEmpty() || clientSecret.trim().isEmpty();
+        System.out.println(StringUtils.isEmpty("    "));
+        System.out.println(StringUtils.isEmpty(""));
+        System.out.println(StringUtils.isEmpty(null));
+        return StringUtils.isEmpty(clientId) || StringUtils.isEmpty(clientSecret);
     }
 
 }
