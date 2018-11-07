@@ -13,6 +13,7 @@ services:
     command: sleep infinity
     volumes:
     - $HOME/.m2/repository:/root/.m2/repository
+    # comment the following line if not running Nexus on your host
     - ./settings.xml:/root/.m2/settings.xml
     - ./dbx-code-grant:/source/dbx-code-grant
     ports:
