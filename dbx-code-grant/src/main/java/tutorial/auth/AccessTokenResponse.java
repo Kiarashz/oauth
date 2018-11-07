@@ -1,10 +1,22 @@
 package tutorial.auth;
 
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 public class AccessTokenResponse {
+
+    @SerializedName("access_token")
+    @Expose
     private String accessToken;
+    @SerializedName("token_type")
+    @Expose
     private String tokenType;
-    private String expiresIn;
-    private String UId;
+    @SerializedName("account_id")
+    @Expose
+    private String accountId;
+    @SerializedName("uid")
+    @Expose
+    private String uid;
 
     public String getAccessToken() {
         return accessToken;
@@ -22,19 +34,20 @@ public class AccessTokenResponse {
         this.tokenType = tokenType;
     }
 
-    public String getExpiresIn() {
-        return expiresIn;
+    public String getAccountId() {
+        return accountId;
     }
 
-    public void setExpiresIn(String expiresIn) {
-        this.expiresIn = expiresIn;
+    public void setAccountId(String accountId) {
+        this.accountId = accountId;
     }
 
-    public String getUId() {
-        return UId;
+    public String getUid() {
+        return uid;
     }
 
-    public void setUId(String UId) {
-        this.UId = UId;
+    public void setUid(String uid) {
+        this.uid = uid;
     }
+
 }

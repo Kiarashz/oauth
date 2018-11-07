@@ -2,9 +2,11 @@ package tutorial.auth;
 
 import com.google.gson.Gson;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpGet;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.StringUtils;
@@ -17,6 +19,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.lambdaworks.redis.*;
 import tutorial.auth.dropbox.account.PersonalAccount;
 
@@ -25,7 +30,7 @@ public class MainController {
 
     String authEndpoint = "https://www.dropbox.com/oauth2/authorize";
     String tokenEndpoint = "https://api.dropboxapi.com/oauth2/token";
-    String accountInfoEndpoint = "https://api.dropboxapi.com/2/users/get_current_account";
+    String accountInfoEndpoint = "https://api.dropboxapi.com/2/users/get_account";
 
     String clientId;
     String clientSecret;
@@ -93,14 +98,19 @@ public class MainController {
 
         final Gson gson = new Gson();
         Reader streamReader = new InputStreamReader(response.getEntity().getContent());
-        AccessTokenResponse atResponse = gson.fromJson(streamReader, AccessTokenResponse.class);
+        final AccessTokenResponse atResponse = gson.fromJson(streamReader, AccessTokenResponse.class);
 
         model.addAttribute("accessToken", atResponse.getAccessToken());
 
+        List<NameValuePair> params = new ArrayList<NameValuePair>();
+        params.add(new BasicNameValuePair("account_id", atResponse.getAccountId()));
+
         // get account info with the access token
-        HttpGet getAccountInfoRequest = new HttpGet(accountInfoEndpoint);
+        HttpPost getAccountInfoRequest = new HttpPost(accountInfoEndpoint);
         getAccountInfoRequest.addHeader("Accept", "application/json");
+        getAccountInfoRequest.addHeader("Content-Type", "application/json   ");
         getAccountInfoRequest.addHeader("Authorization", "Bearer " + atResponse.getAccessToken());
+        getAccountInfoRequest.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
         response = httpClient.execute(getAccountInfoRequest);
 
         if (response.getStatusLine().getStatusCode() != 200) {
@@ -135,9 +145,6 @@ public class MainController {
     }
 
     private boolean isSettingsMissing() {
-        System.out.println(StringUtils.isEmpty("    "));
-        System.out.println(StringUtils.isEmpty(""));
-        System.out.println(StringUtils.isEmpty(null));
         return StringUtils.isEmpty(clientId) || StringUtils.isEmpty(clientSecret);
     }
 
