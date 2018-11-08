@@ -1,10 +1,12 @@
 package tutorial.auth;
 
 import com.google.gson.Gson;
+import org.apache.http.Consts;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.springframework.stereotype.Controller;
@@ -20,6 +22,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import com.lambdaworks.redis.*;
@@ -92,7 +95,7 @@ public class MainController {
 
         if (response.getStatusLine().getStatusCode() != 200) {
             model.addAttribute("fullResponse",
-                    String.format(" 1 %s", response.toString()));
+                    String.format(" TokenRequest: %s", response.toString()));
             return handleError(response, model);
         }
 
@@ -102,20 +105,21 @@ public class MainController {
 
         model.addAttribute("accessToken", atResponse.getAccessToken());
 
-        List<NameValuePair> params = new ArrayList<NameValuePair>();
-        params.add(new BasicNameValuePair("account_id", atResponse.getAccountId()));
+        HashMap<String, String> params = new HashMap<String, String>();
+        params.put("account_id", atResponse.getAccountId());
+        String accountJsonString = gson.toJson(params);
 
         // get account info with the access token
         HttpPost getAccountInfoRequest = new HttpPost(accountInfoEndpoint);
         getAccountInfoRequest.addHeader("Accept", "application/json");
         getAccountInfoRequest.addHeader("Content-Type", "application/json   ");
         getAccountInfoRequest.addHeader("Authorization", "Bearer " + atResponse.getAccessToken());
-        getAccountInfoRequest.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+        getAccountInfoRequest.setEntity(new StringEntity(accountJsonString, Consts.UTF_8));
         response = httpClient.execute(getAccountInfoRequest);
 
         if (response.getStatusLine().getStatusCode() != 200) {
             model.addAttribute("fullResponse",
-                    String.format(" 3 %s", response.toString()));
+                    String.format(" AccountInfoRequest %s", response.toString()));
             return handleError(response, model);
         }
         streamReader =
